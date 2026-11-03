@@ -1,0 +1,9 @@
+{
+    "allreduce_size_16_consec_1": 175.15646362304688,
+    "allreduce_size_8_consec_1": 190.45384216308594,
+    "allreduce_size_8_consec_0": 96.86600112915039,
+    "allreduce_size_4_consec_1": 189.40128326416016,
+    "allreduce_size_4_consec_0": 116.10817527770996,
+    "allreduce_size_2_consec_1": 115.25661754608154,
+    "allreduce_size_2_consec_0": 98.91737747192383
+}

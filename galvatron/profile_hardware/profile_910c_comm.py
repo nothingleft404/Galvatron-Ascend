@@ -113,7 +113,7 @@ def bench_sendrecv(numel, peer_next, peer_prev, iters, warmup):
 
 
 def average_in_group(value, group):
-    tensor = torch.tensor([value], dtype=torch.float64, device="npu")
+    tensor = torch.tensor([value], dtype=torch.float32, device="npu")
     dist.all_reduce(tensor, group=group, op=dist.ReduceOp.SUM)
     return float(tensor.item()) / dist.get_world_size(group)
 
@@ -143,8 +143,8 @@ def profile_allreduce(world_size, numel, iters, warmup):
                     bw, _ = bench_allreduce(numel, pg, iters, warmup)
                     local = average_in_group(bw, pg)
             dist.barrier()
-            gathered = [torch.zeros(1, dtype=torch.float64, device="npu") for _ in range(world_size)]
-            mine = torch.tensor([0.0 if local is None else local], dtype=torch.float64, device="npu")
+            gathered = [torch.zeros(1, dtype=torch.float32, device="npu") for _ in range(world_size)]
+            mine = torch.tensor([0.0 if local is None else local], dtype=torch.float32, device="npu")
             dist.all_gather(gathered, mine)
             if rank == 0:
                 values = [t.item() for t in gathered if t.item() > 0]
@@ -171,8 +171,8 @@ def profile_p2p(world_size, numel, iters, warmup):
             bw = bench_sendrecv(numel, ranks[(idx + 1) % len(ranks)], ranks[(idx - 1) % len(ranks)], iters, warmup)
             local = bw
         dist.barrier()
-        gathered = [torch.zeros(1, dtype=torch.float64, device="npu") for _ in range(world_size)]
-        mine = torch.tensor([0.0 if local is None else local], dtype=torch.float64, device="npu")
+        gathered = [torch.zeros(1, dtype=torch.float32, device="npu") for _ in range(world_size)]
+        mine = torch.tensor([0.0 if local is None else local], dtype=torch.float32, device="npu")
         dist.all_gather(gathered, mine)
         if rank == 0:
             values = [t.item() for t in gathered if t.item() > 0]
@@ -206,8 +206,8 @@ def profile_sp(world_size, size_mb_list, iters, warmup):
                 local_a2a = average_in_group(seconds, pg)
             dist.barrier()
             for name, local in (("allreduce", local_ar), ("all2all", local_a2a)):
-                gathered = [torch.zeros(1, dtype=torch.float64, device="npu") for _ in range(world_size)]
-                mine = torch.tensor([0.0 if local is None else local], dtype=torch.float64, device="npu")
+                gathered = [torch.zeros(1, dtype=torch.float32, device="npu") for _ in range(world_size)]
+                mine = torch.tensor([0.0 if local is None else local], dtype=torch.float32, device="npu")
                 dist.all_gather(gathered, mine)
                 if rank == 0:
                     values = [t.item() for t in gathered if t.item() > 0]
@@ -293,7 +293,7 @@ def profile_overlap(iters, warmup):
     compute_overlap = start.elapsed_time(end) / iters
 
     coe = max(comm_overlap / comm_solo, compute_overlap / compute_solo, 1.0)
-    packed = torch.tensor([coe], dtype=torch.float64, device=device)
+    packed = torch.tensor([coe], dtype=torch.float32, device=device)
     dist.all_reduce(packed, op=dist.ReduceOp.SUM)
     return float(packed.item()) / dist.get_world_size()
 
